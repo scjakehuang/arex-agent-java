@@ -8,7 +8,7 @@ import io.arex.agent.bootstrap.InstrumentationHolder;
 import io.arex.foundation.config.ConfigManager;
 import io.arex.agent.bootstrap.util.CollectionUtil;
 
-import io.arex.inst.extension.matcher.IgnoredTypesMatcher;
+import io.arex.inst.extension.matcher.ArexIgnoredMatchers;
 import io.arex.inst.runtime.model.DynamicClassEntity;
 import io.arex.inst.runtime.model.DynamicClassStatusEnum;
 import io.arex.agent.bootstrap.util.ServiceLoader;
@@ -181,21 +181,20 @@ public class InstrumentationInstaller extends BaseAgentInstaller {
     private AgentBuilder getAgentBuilder() {
         // config may use to add some classes to be ignored in future
         long buildBegin = System.currentTimeMillis();
-        AgentBuilder builder = new AgentBuilder.Default(
+
+        return new AgentBuilder.Default(
                 new ByteBuddy().with(MethodGraph.Compiler.ForDeclaredMethods.INSTANCE))
             .enableNativeMethodPrefix("arex_")
             .disableClassFormatChanges()
-            .ignore(new IgnoredTypesMatcher())
+            .ignore(new ArexIgnoredMatchers(ConfigManager.INSTANCE.getIgnoredTypePrefixes(), ConfigManager.INSTANCE.getIgnoredClassLoaders()))
             .with(new TransformListener())
             .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
             .with(AgentBuilder.InitializationStrategy.NoOp.INSTANCE)
             .with(AgentBuilder.TypeStrategy.Default.REBASE)
-             // https://github.com/raphw/byte-buddy/issues/1441
+            // https://github.com/raphw/byte-buddy/issues/1441
             .with(AgentBuilder.DescriptionStrategy.Default.POOL_FIRST)
             .with(AgentBuilder.LocationStrategy.ForClassLoader.STRONG
                 .withFallbackTo(ClassFileLocator.ForClassLoader.ofSystemLoader()));
-
-        return builder;
     }
 
     private boolean disabledModule(String moduleName) {

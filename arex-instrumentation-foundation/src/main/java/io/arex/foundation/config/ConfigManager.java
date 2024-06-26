@@ -53,6 +53,8 @@ public class ConfigManager {
     private EnumSet<DayOfWeek> allowDayOfWeeks;
     private LocalTime allowTimeOfDayFrom;
     private LocalTime allowTimeOfDayTo;
+    private List<String> ignoredTypePrefixes;
+    private List<String> ignoredClassLoaders;
     private List<String> disabledModules;
     private List<String> retransformModules;
     private Set<String> excludeServiceOperations;
@@ -263,6 +265,8 @@ public class ConfigManager {
         setAllowDayOfWeeks(Integer.parseInt(System.getProperty(ALLOW_DAY_WEEKS, "127")));
         setAllowTimeOfDayFrom(System.getProperty(ALLOW_TIME_FROM, "00:01"));
         setAllowTimeOfDayTo(System.getProperty(ALLOW_TIME_TO, "23:59"));
+        setIgnoredTypePrefixes(System.getProperty(IGNORED_TYPES));
+        setIgnoredClassLoaders(System.getProperty(IGNORED_CLASS_LOADERS));
         setDisabledModules(System.getProperty(DISABLE_MODULE));
         setRetransformModules(System.getProperty(RETRANSFORM_MODULE, "dynamic-class"));
         setExcludeServiceOperations(System.getProperty(EXCLUDE_SERVICE_OPERATION));
@@ -498,6 +502,31 @@ public class ConfigManager {
         }
         LocalDateTime nextTime = LocalDateTime.of(dateTime.toLocalDate(), allowTimeOfDayFrom);
         return Duration.between(LocalDateTime.now(), nextTime).toMillis();
+    }
+
+    public List<String> getIgnoredTypePrefixes() {
+        return ignoredTypePrefixes;
+    }
+
+    public void setIgnoredTypePrefixes(String ignoredTypes) {
+        if (this.ignoredTypePrefixes == null && StringUtil.isEmpty(ignoredTypes)) {
+            this.ignoredTypePrefixes = Collections.emptyList();
+        } else {
+            this.ignoredTypePrefixes = Arrays.asList(StringUtil.split(ignoredTypes, ','));
+        }
+    }
+
+
+    public List<String> getIgnoredClassLoaders() {
+        return ignoredClassLoaders;
+    }
+
+    public void setIgnoredClassLoaders(String ignoredClassLoaders) {
+        if (StringUtil.isEmpty(ignoredClassLoaders)) {
+            this.ignoredClassLoaders = Collections.emptyList();
+        } else {
+            this.ignoredClassLoaders = Arrays.asList(StringUtil.split(ignoredClassLoaders, ','));
+        }
     }
 
     public List<String> getDisabledModules() {
